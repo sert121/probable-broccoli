@@ -11,6 +11,7 @@ from langchain.llms import Cohere,OpenAI
 from langchain.embeddings import CohereEmbeddings
 import pinecone
 
+
 # defining the cohere keys
 COHERE_API_KEY = 'lgi7A2ZBRIswmmUy3FIB0AbjfNhEnvWtgEXnElPi'
 EMBEDDING_TYPE = 'cohere'
