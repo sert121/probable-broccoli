@@ -13,7 +13,7 @@ import pinecone
 
 
 # defining the cohere keys
-COHERE_API_KEY = 'lgi7A2ZBRIswmmUy3FIB0AbjfNhEnvWtgEXnElPi'
+COHERE_API_KEY = ''
 EMBEDDING_TYPE = 'cohere'
 
 #defining the loader
