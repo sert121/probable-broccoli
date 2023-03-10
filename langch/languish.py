@@ -1,7 +1,6 @@
 
 # [1]
 import sys
-
 # import document loader from lamgcahin
 from langchain.document_loaders import UnstructuredPDFLoader, OnlinePDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
