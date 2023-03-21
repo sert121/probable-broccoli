@@ -10,6 +10,7 @@ import pickle
 import cohere
 from qdrant_client.http.models import Batch
 from qdrant_client.http import models
+from langchain.document_loaders import PyPDFLoader
 
 COHERE_API_KEY = os.environ['COHERE_API_KEY']
 COHERE_API_KEY = 'lgi7A2ZBRIswmmUy3FIB0AbjfNhEnvWtgEXnElPi'
@@ -28,6 +29,7 @@ def initialize_vecstore():
     api_key=API_KEY_QDRANT)
 
   collection_name = "Pandora"
+
   # client.create_collection(collection_name=collection_name,
   #                          vectors_config=VectorParams(
   #                            size=4096, distance=Distance.COSINE))
@@ -67,6 +69,7 @@ def create_collection(collection_name='Pandora'):
     vectors_config=models.VectorParams(size=4096,
                                        distance=models.Distance.COSINE),
   )
+  print('done---')
 
 
 def get_collection():
@@ -95,28 +98,83 @@ def query_vecstore(collection_name='Pandora', questions=['']):
   response = client_q.search(collection_name=f"{collection_name}",
                              query_vector=vectors[0],
                              limit=k_max,
-                             with_vectors=True,
                              with_payload=True)
+  print('------\n', response[0].payload['page_content'], '\n------')
 
   print(f'Response h: -----\n {response} \n-----')
 
 
-def doc_store_lang():
+def text_store_lang():
 
-  with open('gpt4.pkl', 'rb') as f:
-    texts = pickle.load(f)
+  loader = PyPDFLoader("potential_topics.pdf")
+  pages = loader.load_and_split()
+
   host = 'https://5bcda451-5eec-489e-a663-1349d8693bf3.us-east-1-0.aws.cloud.qdrant.io:6333'
-  fine_texts = [t.page_content for t in texts]
-  doc_store = Qdrant.from_texts(fine_texts,
+  finer_texts = [t.page_content for t in pages]
+  doc_store = Qdrant.from_texts(finer_texts,
                                 embeddings,
-                                collection_name='ronan',
+                                collection_name='rune',
                                 url=host,
                                 api_key=API_KEY_QDRANT)
   print(doc_store)
+  print(
+    doc_store.similarity_search(
+      'What are you interested in federated learning?'))
 
 
-# create_collection('ronan')
+def doc_store_lang():
+  with open('django_texts.pkl', 'rb') as f:
+    texts = pickle.load(f)
+
+    host = 'https://5bcda451-5eec-489e-a663-1349d8693bf3.us-east-1-0.aws.cloud.qdrant.io:6333'
+
+  doc_store = Qdrant.from_documents(texts,
+                                    embeddings,
+                                    collection_name='django',
+                                    url=host,
+                                    api_key=API_KEY_QDRANT)
+  print(doc_store)
+  print(doc_store.similarity_search('How to install django?'))
+
+
+def load_vec_store_lang():
+
+  print(callable(cohere_client.embed))
+
+  host = 'https://5bcda451-5eec-489e-a663-1349d8693bf3.us-east-1-0.aws.cloud.qdrant.io:6333'
+
+  client_q = QdrantClient(
+    url=
+    'https://5bcda451-5eec-489e-a663-1349d8693bf3.us-east-1-0.aws.cloud.qdrant.io:6333',
+    api_key=API_KEY_QDRANT)
+
+  store = Qdrant(client=client_q,
+                 embedding_function=cohere_client.embed,
+                 collection_name='ronan')
+  print("store", store)
+  r = store.similarity_search_with_score(query='how big is gpt4?')
+  print("Results ----\n", r)
+
+
+def delete_collection(collection_name: str):
+  client_q = QdrantClient(
+    url=
+    'https://5bcda451-5eec-489e-a663-1349d8693bf3.us-east-1-0.aws.cloud.qdrant.io:6333',
+    api_key=API_KEY_QDRANT)
+
+  client_q.delete_collection(collection_name=f"{collection_name}")
+  print('done--')
+
+
+# create_collection('rune')
+# delete_collection('freshman')
 # get_collection()
 # initialize_vecstore()
-# query_vecstore(questions=['What is the size of gpt4?'])
-doc_store_lang()
+# query_vecstore(collection_name='ronan',
+#                questions=['What is the size of gpt4?'])
+
+text_store_lang()
+# load_vec_store_lang()
+# doc_store_lang()
+# query_vecstore(collection_name='artichoke',
+#                questions=['What is the size of gpt4?'])
